@@ -1,2 +1,3 @@
 ---
 # defaults file for zabbix-install
+zabbix_install_pgsql_init: true

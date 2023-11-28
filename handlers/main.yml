@@ -1,2 +1,10 @@
 ---
 # handlers file for zabbix-install
+- name: Yum update cache
+  ansible.builtin.yum:
+    update_cache: yes
+
+- name: Restart postgresql
+  ansible.builtin.service:
+    name: postgresql
+    state: restarted

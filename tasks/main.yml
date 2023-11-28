@@ -13,7 +13,7 @@
 - name: Configure php to preferred major version
   ansible.builtin.dnf:
     update_cache: true    
-    name: '@php:8.1'
+    name: '@php:8.0'
     state: present
   when:
     - ansible_distribution in [ "CentOS", "EL", "Rocky", "AlmaLinux" ]
@@ -34,7 +34,8 @@
 
 - name: Install official zabbix repository
   ansible.builtin.dnf:
-    name: "https://repo.zabbix.com/zabbix/6.4/rhel/8/x86_64/zabbix-release-6.4-1.el8.noarch.rpm"
+    disable_gpg_check: true
+    name: "https://repo.zabbix.com/zabbix/6.0/rhel/8/x86_64/zabbix-release-6.0-4.el8.noarch.rpm"
     state: present
 
 - name: Install necessary software
@@ -46,16 +47,74 @@
     - ansible_distribution in [ "CentOS", "EL", "Rocky", "AlmaLinux" ]
     - ansible_distribution_major_version >= "8"
 
-#- name: Configure postgresql instance for hosting local database
-#  block:
-#    - name: Initialize the postgresql cluster
-#    - name: Add zabbix user
-#    - name: Add zabbix database
-#    - name: Update postgresql database configuration files
-#    - name: start postgresql service
-#
+- name: Configure postgresql instance for hosting local database
+  block:
+    - name: Initialize the postgresql cluster
+      ansible.builtin.command: /usr/bin/postgresql-setup --initdb
+      when:
+        - zabbix_install_pgsql_init == true
+      ignore_errors: true
+
+    - name: Start the postgresql server
+      ansible.builtin.systemd_service:
+        name: postgresql
+        state: started
+        enabled: true
+
+    - name: Add zabbix user
+      become_user: postgres
+      community.postgresql.postgresql_user:
+        name: "zabbix"
+        password: "zabbix"
+
+    - name: Add zabbix database
+      become_user: postgres
+      community.postgresql.postgresql_db:
+        name: "zabbix"
+        owner: "zabbix"
+
+    #- name: Update postgresql database configuration files
+
+    - name: Update pg_hba.conf for zabbix access
+      notify:
+        - Restart postgresql
+      community.postgresql.postgresql_pg_hba:
+        dest: /var/lib/pgsql/data/pg_hba.conf
+        contype: host
+        users: zabbix
+        source: 127.0.0.1/32
+        databases: zabbix
+        method: md5
+        create: true
+
 #- name: configure zabbix Install
 #
 #- name: start zabbix server
+- name: Configure and start Zabbix server
+  block:
+    # Multiple changes can be staged in one lineinfile stanza, we use this here to adjust two lines in the nginx config
+    - name: Configure zabbix-server nginx configuration
+      ansible.builtin.lineinfile:
+        regex: "{{ item.regex }}"
+        line: "{{ item.line }}"
+        path: /etc/nginx/conf.d/zabbix.conf
+      with_items: 
+        # Enable server on port 8080
+        - regex: "^#        listen"
+          line: "\tlisten 8080;"
+        # Set server hostname
+        - regex: "^#        server_name"
+          line: "\tserver_name monitoring.paz.internal;"
+
+    - name: Start and enable server service
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - zabbix-server.service
+        - zabbix-agent.service
+        - nginx.service
+
 #
 #- name: configure firewall

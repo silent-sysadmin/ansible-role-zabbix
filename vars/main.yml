@@ -26,3 +26,5 @@ zabbix_install_pkgs:
   - zabbix-sql-scripts
   - zabbix-selinux-policy
   - zabbix-agent
+  # For Ansible
+  - python3-psycopg2
