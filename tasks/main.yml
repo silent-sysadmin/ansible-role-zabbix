@@ -115,6 +115,17 @@
         - zabbix-server.service
         - zabbix-agent.service
         - nginx.service
+    
+    - name: Configure firewall for runtime
+      ansible.builtin.firewalld:
+        zone: public
+        service: "{{ item }}"
+        permanent: true
+        state: enabled
+        immediate: true
+      loop:
+        - http
+        - https
 
 #
 #- name: configure firewall
