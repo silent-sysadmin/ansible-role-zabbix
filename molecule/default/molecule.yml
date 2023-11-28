@@ -4,7 +4,10 @@ dependency:
 driver:
   name: vagrant
 platforms:
-  - name: instance
+  - name: zabbix
+    box: generic/rocky8
+    memory: 2048
+    cpus: 2
 provisioner:
   name: ansible
 verifier:
