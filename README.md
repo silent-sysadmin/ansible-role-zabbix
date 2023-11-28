@@ -1,7 +1,7 @@
-Role Name
+Zabbix_install
 =========
 
-A brief description of the role goes here.
+Installs zabbix on el8 hosts
 
 Requirements
 ------------
