@@ -105,17 +105,19 @@
 - name: Configure and start Zabbix server
   block:
     - name: Update zabbix server configuration
+      notify: Restart zabbix-server
       ansible.builtin.lineinfile:
         regex: "{{ item.regex }}"
         line: "{{ item.line }}"
-        path: /etc/zabbix/zabbix-server.conf
+        path: /etc/zabbix/zabbix_server.conf
       with_items:
         - regex: "^DBName=zabbix"
-          line: "^DBName=zabbix"
+          line: "DBName=zabbix"
         - regex: "^DBUser=zabbix"
-          line: "^DBUser=zabbix"
+          line: "DBUser=zabbix"
         - regex: "# DBPassword="
           line: "DBPassword=zabbix"
+
     # Multiple changes can be staged in one lineinfile stanza, we use this here to adjust two lines in the nginx config
     - name: Configure zabbix-server nginx configuration
       ansible.builtin.lineinfile:
