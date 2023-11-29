@@ -1,3 +1,4 @@
 ---
 # defaults file for zabbix-install
 zabbix_install_pgsql_init: true
+_allow_restore_db_schema: false

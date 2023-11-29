@@ -50,10 +50,17 @@
 - name: Configure postgresql instance for hosting local database
   block:
     - name: Initialize the postgresql cluster
-      ansible.builtin.command: /usr/bin/postgresql-setup --initdb
+      ignore_errors: true
+      register: _postgres_initdb
       when:
         - zabbix_install_pgsql_init == true
-      ignore_errors: true
+      ansible.builtin.command: /usr/bin/postgresql-setup --initdb
+
+      # Protection against overwriting legitimate data
+    - name: Detect install is clean-state
+      when: _postgres_initdb.rc == 0 
+      ansible.builtin.set_fact:
+        _allow_restore_db_schema: true
 
     - name: Start the postgresql server
       ansible.builtin.systemd_service:
@@ -91,6 +98,8 @@
         state: restarted
 
     - name: Restore zabbix data set to db
+      when:
+        - _allow_restore_db_schema is true
       community.postgresql.postgresql_db:
         login_user: zabbix
         login_password: zabbix
