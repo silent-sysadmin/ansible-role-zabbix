@@ -73,8 +73,6 @@
         name: "zabbix"
         owner: "zabbix"
 
-    #- name: Update postgresql database configuration files
-
     - name: Update pg_hba.conf for zabbix access
       notify:
         - Restart postgresql
@@ -86,6 +84,20 @@
         databases: zabbix
         method: md5
         create: true
+    
+    - name: Restart postgres
+      ansible.builtin.service:
+        name: postgresql
+        state: restarted
+
+    - name: Restore zabbix data set to db
+      community.postgresql.postgresql_db:
+        login_user: zabbix
+        login_password: zabbix
+        login_host: localhost
+        name: "zabbix"
+        state: restore
+        target: "/usr/share/zabbix-sql-scripts/postgresql/server.sql.gz"
 
 #- name: configure zabbix Install
 #
@@ -125,7 +137,17 @@
         immediate: true
       loop:
         - http
-        - https
+        #- https
+
+    - name: Configure firewall for runtime
+      ansible.builtin.firewalld:
+        zone: public
+        port: "{{ item }}"
+        permanent: true
+        state: enabled
+        immediate: true
+      loop:
+        - "8080/tcp"
 
 #
 #- name: configure firewall
