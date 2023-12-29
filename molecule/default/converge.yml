@@ -5,4 +5,4 @@
   tasks:
     - name: "Include zabbix-install"
       ansible.builtin.include_role:
-        name: "zabbix-install"
+        name: "ansible-role-zabbix-install"
