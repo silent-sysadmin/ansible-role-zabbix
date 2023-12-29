@@ -3,6 +3,6 @@
   hosts: all
   become: true
   tasks:
-    - name: "Include zabbix-install"
+    - name: "Include zabbix"
       ansible.builtin.include_role:
-        name: "ansible-role-zabbix-install"
+        name: "ansible-role-zabbix"
