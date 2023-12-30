@@ -8,7 +8,7 @@ driver:
   provider: 
     name: libvirt
 platforms:
-  - name: zabbix
+  - name: zabbix-2vol
     box: generic/rocky8
     memory: 2048
     cpus: 2
