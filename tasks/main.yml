@@ -159,3 +159,5 @@
         immediate: true
       loop:
         - "8080/tcp"
+        - "10051/tcp"
+        - "443/tcp"
