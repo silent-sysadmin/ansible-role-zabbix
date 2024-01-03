@@ -39,6 +39,30 @@
   when:
     - zabbix_install_pgsql_init == true
   block:
+    - name: DB Deploy | Verify host requirements
+      block:
+        - name: DB Deploy Prep | Determine ... /var/lib/pgsql/
+          register: _stat_pgsql
+          ansible.builtin.stat:
+            path: /var/lib/pgsql/
+        
+        - name: DB Deploy Prep | Assert /var/lib/pgsql is setup correctly
+          ansible.builtin.assert:
+            that: 
+              - _stat_pgsql.stat.pw_user == "postgres"
+              - _stat_pgsql.stat.mode == "0700"
+            msg: "/var/lib/pgsql directory mode/ownership test failed"
+      
+      rescue:
+        - name: DB Deploy Prep | Create /var/lib/pgsql directory
+          ansible.builtin.file:
+            path: "/var/lib/pgsql"
+            state: directory
+            owner: "postgres"
+            group: "postgres"
+            mode: "0700"
+            setype: "postgresql_db_t"
+
     - name: Initialize the postgresql cluster
       ignore_errors: true
       register: _postgres_initdb

@@ -1,0 +1,24 @@
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: molecule/remote_vol/requirements.yml
+driver:
+  name: vagrant
+  provider: 
+    name: libvirt
+platforms:
+  - name: zabbix-2vol
+    box: generic/rocky8
+    memory: 2048
+    cpus: 2
+    interfaces:
+      - network_name: forwarded_port
+        guest: 8080
+        host: 8080
+    provider_raw_config_args:
+      - storage :file, :size => '20G'
+provisioner:
+  name: ansible
+verifier:
+  name: ansible

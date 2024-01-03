@@ -1,0 +1,22 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  tasks:
+    - name: "Include LVM management step"
+      ansible.builtin.include_role:
+        name: silent-sysadmin.local-volumes
+      vars:
+        - lv_name: "test"
+          vg_name: "db"
+          lv_size: "100%FREE"
+          lv_allow_shrink: false
+          target_disk: /dev/vdb
+          fstype: xfs
+          state: mounted
+          automount: true
+          mount_path: /var/lib/pgsql
+
+    - name: "Include zabbix"
+      ansible.builtin.include_role:
+        name: "ansible-role-zabbix"
