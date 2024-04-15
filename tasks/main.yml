@@ -138,6 +138,8 @@
           line: "DBUser={{ zabbix_database_username}}"
         - regex: "# DBPassword="
           line: "DBPassword={{ zabbix_database_password }}"
+        - regex: "# ValueCacheSize=8M"
+          line: "ValueCacheSize={{ zabbix_value_cache_size | default('128M')}}"
 
     # Multiple changes can be staged in one lineinfile stanza, we use this here to adjust two lines in the nginx config
     - name: Configure zabbix-server nginx configuration
