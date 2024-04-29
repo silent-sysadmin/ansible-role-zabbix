@@ -22,3 +22,20 @@ zabbix_required_packages:
   - zabbix-agent
   # For Ansible
   - python3-psycopg2
+
+zabbix_proxy_required_packages:
+  - zabbix-proxy-pgsql 
+  - zabbix-sql-scripts
+  - zabbix-selinux-policy
+  - zabbix-agent
+  # For Ansible
+  - python3-psycopg2
+
+zabbix_install_proxy: false
+zabbix_proxy_server_name: "zabbix_proxy"
+zabbix_proxy_database_name: "zabbix_proxy"
+zabbix_proxy_database_username: "zabbix_proxy"
+zabbix_proxy_database_password: "zabbix_proxy"
+zabbix_proxy_database_host: "127.0.0.1"
+zabbix_proxy_cache_size: 128M
+ConfigFrequency: 3600

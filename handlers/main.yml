@@ -13,3 +13,8 @@
   ansible.builtin.service:
     name: zabbix-server.service
     state: restarted
+
+- name: Restart zabbix-proxy
+  ansible.builtin.service:
+    name: zabbix-proxy.service
+    state: restarted
