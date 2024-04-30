@@ -39,3 +39,9 @@ zabbix_proxy_database_password: "zabbix_proxy"
 zabbix_proxy_database_host: "127.0.0.1"
 zabbix_proxy_cache_size: 128M
 ConfigFrequency: 3600
+
+# psk, none
+zabbix_proxy_encryption_tlsconnect_mode: "none"
+zabbix_proxy_encryption_tlsaccept_mode: "none"
+zabbix_proxy_encryption_psk_identity: "test"
+zabbix_proxy_encryption_psk_key: "test"

@@ -123,10 +123,11 @@
 #- name: configure zabbix Install
 #
 #- name: start zabbix Proxy
+
 - name: Configure and start Zabbix Proxy
   block:
-    - name: Update zabbix server configuration
-      notify: Restart zabbix-server
+    - name: Configure zabbix proxy to use local database.
+      notify: Restart zabbix-proxy
       ansible.builtin.lineinfile:
         regex: "{{ item.regex }}"
         line: "{{ item.line }}"
@@ -139,7 +140,34 @@
         - regex: "# DBPassword="
           line: "DBPassword={{ zabbix_database_password }}"
 
+    - name: Create PSK file for zabbix encryption
+      ansible.builtin.copy:
+        dest: "/etc/zabbix/paz-psk"
+        mode: '0600'
+        owner: 'root'
+        group: 'zabbix'
+        content: "{{ zabbix_proxy_encryption_psk_key }}"
+      when:
+        - (zabbix_proxy_encryption_tlsconnect_mode != "none" ) or (zabbix_proxy_encryption_tlsaccept_mode != "none")
+
     # Multiple changes can be staged in one lineinfile stanza, we use this here to adjust two lines in the nginx config
+    - name: Configure proxy encryption options
+      notify: Restart zabbix-proxy
+      ansible.builtin.lineinfile:
+        regex: "{{ item.regex }}"
+        line: "{{ item.line }}"
+        path: /etc/zabbix/zabbix_proxy.conf
+      with_items:
+        - regex: "# TLSConnect="
+          line: "TLSConnect={{ zabbix_proxy_encryption_tlsconnect_mode }}"
+        - regex: "# TLSAccept"
+          line: "TLSConnect={{ zabbix_proxy_encryption_tlsaccept_mode }}"
+        - regex: "# TLSPSKIdentity"
+          line: "TLSPSKIdentity={{ zabbix_proxy_encryption_psk_identity }}"
+        - regex: "# TLSPSKFile"
+          line: "TLSPSKFile=/etc/zabbix/paz-psk"
+      when:
+        - (zabbix_proxy_encryption_tlsconnect_mode != "none" ) or (zabbix_proxy_encryption_tlsaccept_mode != "none")
 
     - name: Start and enable server service
       ansible.builtin.systemd_service:
